@@ -45,11 +45,14 @@ function executeTest($description, $expected, $actual) {
 	$testcaseNode.Attributes.Append($global:xmlDoc.CreateAttribute("name"))
 	$testcaseNode.SetAttribute("name", $description)
 	$testcaseNode.Attributes.Append($global:xmlDoc.CreateAttribute("classname"))
-	$testcaseNode.SetAttribute("classname", $env:Target)
+	$testcaseNode.SetAttribute("classname", "Tests")
 	$testcaseNode.Attributes.Append($global:xmlDoc.CreateAttribute("time"))
-	$global:testsuiteNode.PrependChild($testcaseNode)
+	
 
-	# 'Run' the test
+	# 'Run' the test, time it
+	$stopwatch = New-Object System.Diagnostics.Stopwatch
+	$stopwatch.Start()
+	
 	if ($expected -ne $actual) {
 		$global:failureCount++
 		$global:errorCount++
@@ -60,4 +63,11 @@ function executeTest($description, $expected, $actual) {
 		$failureNode.SetAttribute("message", "Expected '$description' to be '$expected' was '$actual'")
 		$testcaseNode.PrependChild($failureNode)
 	}
+	
+	# Stop the stopwatch
+	$stopwatch.Stop()
+	
+	# Finalize the report bits for this test
+	$testcaseNode.SetAttribute("time", $stopwatch.ElapsedMilliseconds)
+	$global:testsuiteNode.PrependChild($testcaseNode)
 }
